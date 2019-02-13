@@ -13,7 +13,8 @@ let articleSchema = new Schema({
   created_at : {
     type : Date,
     default : new Date
-  }
+  },
+  image : String
 })
 
 let article = mongoose.model('Article', articleSchema)

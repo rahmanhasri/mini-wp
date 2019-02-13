@@ -18,9 +18,12 @@ module.exports = {
 
   createArticle: function(req, res) {
 
+    let image = req.file ? req.file.cloudStoragePublicUrl : ''
+
     Article.create({
       title : req.body.title,
-      content : req.body.content
+      content : req.body.content,
+      image : image
     })
       .then( function(newData) {
         res
@@ -57,7 +60,7 @@ module.exports = {
 
     Article.findByIdAndDelete(req.params.id)
       .then( function(deleted) {
-        console.log(deleted)
+        // console.log(deleted)
         res
           .status(200)
           .json(deleted)

@@ -12,7 +12,7 @@
         <a class="btn my-3" style="color: black"  data-toggle="collapse" :href="`#collapseExample${article._id}`" role="button" aria-expanded="false" aria-controls="collapseExample">
           View Detail
         </a>
-        <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article._id, article.title, article.content)">
+        <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article)">
           Edit
         </a>
         <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id)" role="button" >

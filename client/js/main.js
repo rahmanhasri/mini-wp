@@ -24,7 +24,8 @@ const app2 = new Vue({
     text: '',
     title: '',
     keyword: '',
-    update : false
+    update : false,
+    files : []
   },
   computed : {
     filtered() {
@@ -36,6 +37,8 @@ const app2 = new Vue({
       this.title = ''
       this.text = ''
       this.update = false
+      this.files = []
+      this.preview = ''
     },
     updateArticle(article) {
       this.title = article.title
@@ -43,13 +46,16 @@ const app2 = new Vue({
       this.update = article
     },
     submit() {
+      // console.log(JSON.stringify(this.text))
+      let dataForm = new FormData()
+      dataForm.append('title', this.title)
+      dataForm.append('content', this.text)
+      dataForm.append('image', this.files[0])
       axios({
         method: 'post',
         url: serverUrl + '/articles',
-        data : {
-          title : this.title,
-          content : this.text
-        }
+        data : dataForm,
+        headers: { 'Content-Type': 'multipart/form-data' }        
       })
         .then( ({ data }) => {
           // console.log(data)
@@ -59,7 +65,8 @@ const app2 = new Vue({
           });
           this.clearEditor()
         })
-        .catch( ({response}) => {
+        .catch( ({response }) => {
+          console.log(response)
           // console.log(response.data.message.split('Article validation failed: ')[1].split(', '))
           let warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
           swal(warning, {
@@ -106,7 +113,7 @@ const app2 = new Vue({
           })
             .then( response => {
               let index = this.articles.findIndex(article => {
-                return article.id == id
+                return article._id == id
               })
               this.articles.splice(index, 1)
               swal("Poof! Your Article has been deleted!", {
@@ -118,6 +125,39 @@ const app2 = new Vue({
             })
         }
       });
+    },
+    previewFiles(e) {
+      const file = e.target.files[0];
+      this.files = this.$refs.myFiles.files
+      this.preview = URL.createObjectURL(file)
+      // console.log(file)
+      // console.log(this.preview)
+    },
+    uploadImage() {
+      
+      if(this.files.length) {
+        let dataForm = new FormData()
+        dataForm.append('image', this.files[0])
+        axios({
+          method: 'post',
+          url: serverUrl + '/upload',
+          data : dataForm,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+          .then( ({ data }) => {
+            // console.log(response) 
+            swal(data.message, data.link)
+          })
+          .catch( err => {
+            console.log(err)
+          })
+      } else {
+        let warning = `please choose file...`
+        swal(warning, {
+          buttons: false,
+          timer: 2000,
+        });
+      }
     }
   }
 })

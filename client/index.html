@@ -39,7 +39,7 @@
             <a class="nav-link" data-toggle="collapse" href="#collapseOne" @click.prevent="clearEditor">New Articles</a>
         </nav>
       </div>
-      <div class="col-8">
+      <div class="col-7">
         <!-- F O R M    A R T I C L E S  -->
 
         <div class="panel-group my-2" id="accordion">
@@ -47,9 +47,20 @@
           <div  id="collapseOne" class="panel-collapse collapse in" style="height:800px;">
             <form action="#">
               <input type="text" class="form-control my-2" v-model="title" placeholder="Enter the title...">
+              <input class="btn btn-outline-dark my-2" type="file" name="image" id="imageUpload" ref="myFiles"
+              @change="previewFiles">
+              <br>
               <div> <wysiwyg v-model="text" /> </div>
               <a class="btn btn-outline-success my-3" @click.prevent="submitUpdate" v-if="update != false">Update</a>
-              <a class="btn btn-outline-success my-3" @click.prevent="submit" v-else>Submit</a> <a class="btn btn-outline-danger my-3" data-toggle="collapse" href="#collapseOne" @click.prevent="clearEditor">Dismiss</a>
+              <a class="btn btn-outline-success my-3" @click.prevent="submit" v-else>Submit</a> 
+              <a class="btn btn-outline-danger my-3" data-toggle="collapse" href="#collapseOne" @click.prevent="clearEditor">Dismiss</a>
+            </form>
+            <form action="#">
+              <!-- <label for="upload-image">Single Upload Image</label>
+              <input class="btn btn-outline-dark" type="file" name="image" id="image-upload" ref="myFiles"
+              @change="previewFiles">
+              <br>
+              <a class="btn btn-outline-success rounded-0" @click.prevent="uploadImage">Upload</a>  -->
             </form>
           </div>
         </div>
@@ -61,7 +72,7 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-3">
-                  <!-- <img class="img-thumbnail" src="./alisa-anton-63908-unsplash.jpg" alt="article-image"> -->
+                  <img class="img-thumbnail" :src="article.image" alt="article-image" v-if="article.image != ''">
                 </div>
                 <div class="col-md-9">
                   <h4 class="card-title">{{ article.title }}</h4>
@@ -90,7 +101,11 @@
             
 
           </div>
-          <div class="col-2">
+          <div class="col-3">
+            <div class="">
+              <h3 v-if="files.length">Preview</h3>
+              <img class="img-thumbnail" :src="preview" alt="image preview" v-if="files.length">
+            </div>
             </div>
         </div>
     </div>
