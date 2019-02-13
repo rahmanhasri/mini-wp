@@ -1,0 +1,44 @@
+
+header {
+  background-color:whitesmoke;
+}
+nav {
+  height: calc(100vh - 4rem);
+}
+
+a.navbar-brand.mx-auto, a.nav-link {
+  color: black;
+}
+
+a.nav-link {
+  transition: all 0.5s;
+}
+
+a.nav-link:hover {
+  transform: scale(1.1);
+}
+
+/* a.btn.btn-outline-secondary.rounded-0.my-3:hover {
+  background-color : pink;
+} */
+
+a.btn.my-3 {
+  border-radius: 0;
+  border: 1px solid black;
+}
+
+a.btn.my-3:hover {
+  background-color: pink;
+  color : white;
+}
+
+footer p {
+  font-size:11px;
+}
+
+.sticky-top {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}

@@ -1,0 +1,32 @@
+<div class="card" v-for="article in filtered">
+  <div class="card-header">
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3">
+        <!-- <img class="img-thumbnail" src="./alisa-anton-63908-unsplash.jpg" alt="article-image"> -->
+      </div>
+      <div class="col-md-9">
+        <h4 class="card-title">{{ article.title }}</h4>
+        <footer><p>Created At : {{ new Date(article.created_at) }}</p></footer>
+        <a class="btn my-3" style="color: black"  data-toggle="collapse" :href="`#collapseExample${article._id}`" role="button" aria-expanded="false" aria-controls="collapseExample">
+          View Detail
+        </a>
+        <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article._id, article.title, article.content)">
+          Edit
+        </a>
+        <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id)" role="button" >
+          Delete
+        </a>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <div class="collapse w-100" :id="`collapseExample${article._id}`">
+        <div class="card card-body" v-html="article.content">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

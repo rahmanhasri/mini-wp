@@ -1,0 +1,14 @@
+{
+  "articles": [
+    {
+      "title": "Mencurigakan baru banget",
+      "body": "<h1>this is an article</h1>",
+      "id": 1
+    },
+    {
+      "title": "Mencurigakan",
+      "body": "<h1>this is an article so weird yet so awesome</h1>",
+      "id": 3
+    }
+  ]
+}
