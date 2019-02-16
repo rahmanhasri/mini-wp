@@ -16,27 +16,47 @@ module.exports = {
       })
   },
 
-  createArticle: function(req, res) {
+  createAndUpdateArticle: function(req, res) {
 
     let image = req.file ? req.file.cloudStoragePublicUrl : ''
-    console.log(req.file)
+    // console.log(req.file)
+    // console.log(req.body)
+
     console.log(req.body)
-    Article.create({
-      title : req.body.title,
-      content : req.body.content,
-      image : image,
-      created_at : new Date()
-    })
-      .then( function(newData) {
-        res
-          .status(201)
-          .json(newData)
+    if(req.params.id) {
+      Article.updateOne({ _id : req.params.id }, { $set : req.body }, { new : true, runValidators : true })
+        .then( function(updated) {
+          console.log(updated)
+          res
+            .status(200)
+            .json(updated)
+        })
+        .catch( function(err) {
+          console.log(err)
+          res
+            .status(400)
+            .json(err)
+        })
+    } else {
+
+      Article.create({
+        title : req.body.title,
+        content : req.body.content,
+        image : image,
+        created_at : new Date()
       })
-      .catch( function(err) {
-        res
-          .status(400)
-          .json(err)
-      })
+        .then( function(newData) {
+          res
+            .status(201)
+            .json(newData)
+        })
+        .catch( function(err) {
+          res
+            .status(400)
+            .json(err)
+        })
+    }
+
   },
 
   updateArticle: function(req, res) {
@@ -44,10 +64,6 @@ module.exports = {
     input = {
       title : req.body.title,
       content : req.body.content,
-    }
-
-    if (req.file) {
-      input.image = req.file.cloudStoragePublicUrl
     }
     
     Article.findByIdAndUpdate(req.params.id, { $set : input }, { new : true } )

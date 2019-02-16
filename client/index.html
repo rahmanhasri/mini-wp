@@ -5,118 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Mini Wordpress</title>
-  <link rel="stylesheet" href="./css/vueWysiwyg.css">
+  <link rel="stylesheet" href="./assets/css/vueWysiwyg.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  <link rel="stylesheet" href="./css/mystyle.css">
+  <link rel="stylesheet" href="./assets/css/mystyle.css">
 </head>
 
 <body>
 
-  <header class="navbar navbar-light d-flex justify-content-between bd-navbar sticky-top" style="background-color:#00353f;">
-    <!-- <div class="p-2">Home</div> -->
-    
-    <a class="navbar-brand mx-auto" href="#"><img src="./1678114134_68b672ac-bf69-4df6-8f13-ab4512ab0103.png" alt="logo"></a>
-    <div class="p-2 dropdown">
-      <a href="#" class="btn dropdown-toggle" style="color: pink;" data-toggle="dropdown"><i class="far fa-user-circle fa-lg my-1"></i></a>
-      <div class="dropdown-menu dropdown-menu-right" v-if="currentPage == 'menu'">
-          <a class="dropdown-item" href="#">Setting</a>
-          <a class="dropdown-item" href="#">Logout</a>
-        </div>
+  <div id="app">
+    <header class="navbar navbar-light d-flex justify-content-between bd-navbar sticky-top" style="background-color:#00353f;">
       
-    </div>
-  </header>
-
-  <div class="container-fluid" id="articles" >
-    <div class="row">
-      <div class="col-2">
-        <nav class="nav flex-column border-right">
-            <form action="#" @submit.prevent="filter" class="my-3 mx-2">
-              <input type="Search" id="input-id" class="form-control ds-input" placeholder="Search Articles" v-model="keyword">
-            </form>
-            <a class="nav-link" @click.prevent="toArticle" href="#">Articles</a>
-            <a class="nav-link" @click.prevent="toEditor" href="#">New Articles</a>
-        </nav>
+      <a class="navbar-brand mx-auto" href="#"><img src="./assets/logo.png" alt="logo"></a>
+      <div class="p-2 dropdown">
+        <a href="#" class="btn dropdown-toggle" style="color: orange;" data-toggle="dropdown"><i class="far fa-user-circle fa-lg my-1"></i></a>
+        <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="#">Setting</a>
+            <a class="dropdown-item" href="#">Logout</a>
+        </div>
+        
       </div>
-      <div class="col-7">
-        <!-- F O R M    A R T I C L E S  -->
-
-        <div class="panel-group my-2" v-if="currentPage == 'editor'">
-      
-          <div  style="height:800px;" class="mx-auto">
-            <div v-if="loading === false">
-              <form action="#" >
-                <input type="text" class="form-control my-2" v-model="title" placeholder="Enter the title...">
-                <input class="btn btn-outline-dark my-2" type="file" name="image" id="imageUpload" ref="myFiles"
-                @change="previewFiles">
-                <br>
-                <div> <wysiwyg v-model="text" /> </div>
-                <a class="btn btn-outline-success my-3" @click.prevent="submitUpdate" v-if="update != false">Update</a>
-                <a class="btn btn-outline-success my-3" @click.prevent="submit" data-target="#myModal" v-else>Submit</a> 
-                <a class="btn btn-outline-danger my-3" data-toggle="collapse" href="#" @click.prevent="toArticle">Dismiss</a>
-                
-              </form>
-            </div>
-            <div class="d-flex justify-content-center" v-else>
-              <img class="item-" src="https://static-steelkiwi-dev.s3.amazonaws.com/media/filer_public/4e/07/4e07eece-7c84-46e2-944d-1a6b856d7b5f/463ff844-6f36-4ffe-b051-fea983d39223.gif">
-            </div>
-            <form action="#">
-              <!-- <label for="upload-image">Single Upload Image</label>
-              <input class="btn btn-outline-dark" type="file" name="image" id="image-upload" ref="myFiles"
-              @change="previewFiles">
-              <br>
-              <a class="btn btn-outline-success rounded-0" @click.prevent="uploadImage">Upload</a>  -->
-            </form>
-          </div>
+    </header>
+  
+    <div class="container-fluid" id="articles" >
+      <div class="row">
+        <sidebar-component @page="changeMenu($event)" @filter="searchFilter($event)"></sidebar-component>
+        <div class="col-7">
+  
+          <form-component v-if="menu === 'editor'" @preview="preview($event)" @edit-article="fillForm" :update-article="update" @updateSucess="updatedData($event)"></form-component>
+  
+          <article-component v-else-if="menu === 'article'" v-for="(article, index) in filtered" :article="article" :index="index" :key="article._id" @deleteArticle="delete($event)"  @edit-article="fillForm($event)"></article-component>          
+  
         </div>
-
-        <!--   A R T I C L E S  C A R D  -->
-          <template v-else-if="currentPage == 'menu'">
-            <div class="card" v-for="article in filtered">
-              <div class="card-header">
-              </div>
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-3">
-                    <img class="img-thumbnail" :src="article.image" alt="article-image" v-if="article.image != ''">
-                  </div>
-                  <div class="col-md-9">
-                    <h4 class="card-title">{{ article.title }}</h4>
-                    <footer><p>Created At : {{ new Date(article.created_at) }}</footer>
-                    <a class="btn my-3" style="color: black"  data-toggle="collapse" :href="`#collapseExample${article._id}`" role="button" aria-expanded="false" aria-controls="collapseExample">
-                      View Detail
-                    </a>
-                    <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article)">
-                      Edit
-                    </a>
-                    <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id)" role="button" >
-                      Delete
-                    </a>
-                  </div>
-                </div>
-    
-                <div class="row">
-    
-                  <div class="collapse w-100" :id="`collapseExample${article._id}`">
-                    <div class="card card-body" v-html="article.content">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          
-          </template>    
-
-          </div>
-          <div class="col-3">
-            <div class="">
-              <h3 v-if="files.length">Preview</h3>
-              <img class="img-thumbnail" :src="preview" alt="image preview" v-if="files.length">
-            </div>
-            </div>
+        <div class="col-3">
+          <preview-component v-if="previewImage != ''" :preview="previewImage" ></preview-component>
         </div>
+      </div>
     </div>
+  </div>
   
 
   <!-- S C R I P T    H E R E  -->
@@ -124,9 +51,13 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <script src="./js/vueWysiwyg.js"></script>
+  <script src="./assets/js/vueWysiwyg.js"></script>
   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-  <script src="./js/main.js"></script>
+  <script src="./assets/components/article-component.js"></script>
+  <script src="./assets/components/form-component.js"></script>
+  <script src="./assets/components/sidebar-component.js"></script>
+  <script src="./assets/components/preview-component.js"></script>
+  <script src="./assets/components/main.js"></script>
 
 </body>
 </html>

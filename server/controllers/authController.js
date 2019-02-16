@@ -25,6 +25,7 @@ module.exports = {
 
   login : function(req, res) {
 
+    console.log(req.body)
     User.findOne({email : req.body.email})
       .then( function(user) {
         // console.log(user)
@@ -36,7 +37,7 @@ module.exports = {
           let checkPass = compareHash(req.body.password, user.password)
           if(!checkPass) {
             res
-              .status(400)
+              .status(400) // tanya ke dimitri
               .json({ msg : `invalid username or password`})
           } else {
             let token = tokenGenerator(user._id, user.email)
@@ -45,6 +46,11 @@ module.exports = {
               .json({ token : token })
           }
         }
+      })
+      .catch( function(err) {
+        res
+          .status(500)
+          .json(err)
       })
   }
 }
