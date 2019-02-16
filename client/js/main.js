@@ -10,7 +10,7 @@ const app2 = new Vue({
       url: serverUrl + '/articles'
     })
       .then( ({data}) => {
-        this.articles = [...data]
+        this.articles = data
       })
       .catch( ({response}) => {
         console.log(response)
@@ -25,7 +25,9 @@ const app2 = new Vue({
     title: '',
     keyword: '',
     update : false,
-    files : []
+    files : [],
+    currentPage : 'menu',
+    loading : false
   },
   computed : {
     filtered() {
@@ -33,6 +35,13 @@ const app2 = new Vue({
     }
   },
   methods: {
+    toEditor() {
+      this.currentPage ='editor'
+    },
+    toArticle() {
+      this.clearEditor()
+      this.currentPage = 'menu'
+    },
     clearEditor() {
       this.title = ''
       this.text = ''
@@ -51,38 +60,55 @@ const app2 = new Vue({
       dataForm.append('title', this.title)
       dataForm.append('content', this.text)
       dataForm.append('image', this.files[0])
-      axios({
-        method: 'post',
-        url: serverUrl + '/articles',
-        data : dataForm,
-        headers: { 'Content-Type': 'multipart/form-data' }        
-      })
-        .then( ({ data }) => {
-          // console.log(data)
-          this.articles.unshift(data)
-          swal("Poof! Your Article has been submitted!", {
-            icon: "success",
-          });
-          this.clearEditor()
+      if(!this.files.length) {
+        swal('Please input featured image', {
+          buttons: true,
+          timer: 2000,
+        });
+      } else if(!(this.files[0].type.includes('jpeg') || this.files[0].type.includes('jpg') || this.files[0].type.includes('png'))) {
+        swal({
+          title: "Please input image file",
+          button : "ok",
+          timer: 2000
         })
-        .catch( ({response }) => {
-          console.log(response)
-          // console.log(response.data.message.split('Article validation failed: ')[1].split(', '))
-          let warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
-          swal(warning, {
-            buttons: false,
-            timer: 2000,
-          });
-        })     
+      } else {
+        this.loading = true
+        axios({
+          method: 'post',
+          url: serverUrl + '/articles',
+          data : dataForm,
+          headers: { 'Content-Type': 'multipart/form-data' }        
+        })
+          .then( ({ data }) => {
+            // console.log(data)
+            this.articles.unshift(data)
+            this.loading = false
+            swal("Poof! Your Article has been submitted!", {
+              icon: "success",
+            });
+            this.clearEditor()
+          })
+          .catch( ({response }) => {
+            console.log(response)
+            // console.log(response.data.message.split('Article validation failed: ')[1].split(', '))
+            let warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
+            swal(warning, {
+              buttons: true,
+              timer: 2000,
+            });
+          })     
+      }
     },
     submitUpdate() {
+      let dataForm = new FormData()
+      dataForm.append('title', this.title)
+      dataForm.append('content', this.text)
+      dataForm.append('image', this.files[0])
       axios({
         method: 'put',
         url: serverUrl+ `/articles/${this.update._id}`,
-        data : {
-          title : this.title,
-          content : this.text
-        }
+        data : dataForm,
+        headers : { 'Content-Type' : 'multipart/form-data'}
       })
         .then( ({data}) => {
           // console.log(data)
@@ -133,9 +159,15 @@ const app2 = new Vue({
       // console.log(file)
       // console.log(this.preview)
     },
-    uploadImage() {
+    uploadImage() { // ga dipake
       
-      if(this.files.length) {
+      if(!this.files.length) {
+        let warning = `please choose file...`
+        swal(warning, {
+          buttons: false,
+          timer: 2000,
+        });
+      } else {
         let dataForm = new FormData()
         dataForm.append('image', this.files[0])
         axios({
@@ -151,12 +183,6 @@ const app2 = new Vue({
           .catch( err => {
             console.log(err)
           })
-      } else {
-        let warning = `please choose file...`
-        swal(warning, {
-          buttons: false,
-          timer: 2000,
-        });
       }
     }
   }

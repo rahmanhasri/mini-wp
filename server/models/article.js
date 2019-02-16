@@ -10,11 +10,9 @@ let articleSchema = new Schema({
     type: String,
     required : [true, `content can't be blank`]
   },
-  created_at : {
-    type : Date,
-    default : new Date
-  },
-  image : String
+  created_at : Date,
+  image : String,
+  tags : [{ type : Schema.Types.String, ref: 'Tag' }]
 })
 
 let article = mongoose.model('Article', articleSchema)

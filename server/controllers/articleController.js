@@ -19,11 +19,13 @@ module.exports = {
   createArticle: function(req, res) {
 
     let image = req.file ? req.file.cloudStoragePublicUrl : ''
-
+    console.log(req.file)
+    console.log(req.body)
     Article.create({
       title : req.body.title,
       content : req.body.content,
-      image : image
+      image : image,
+      created_at : new Date()
     })
       .then( function(newData) {
         res
@@ -39,10 +41,16 @@ module.exports = {
 
   updateArticle: function(req, res) {
 
-    Article.findByIdAndUpdate(req.params.id, {
-      title: req.body.title,
-      content: req.body.content
-    }, { new : true } )
+    input = {
+      title : req.body.title,
+      content : req.body.content,
+    }
+
+    if (req.file) {
+      input.image = req.file.cloudStoragePublicUrl
+    }
+    
+    Article.findByIdAndUpdate(req.params.id, { $set : input }, { new : true } )
       .then( function(updated) {
         res
           .status(200)

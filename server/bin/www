@@ -10,7 +10,7 @@ var http = require('http');
 var mongoose = require('mongoose')
 require('dotenv').config()
 
-mongoose.connect('mongodb://localhost:27017/mini-wp', { useNewUrlParser : true })
+mongoose.connect(`mongodb://localhost:27017/mini-wp`, { useNewUrlParser : true })
 /**
  * Get port from environment and store in Express.
  */
