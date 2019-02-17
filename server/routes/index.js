@@ -6,9 +6,10 @@ var authRoute = require('./authentication')
 var userRoute = require('./user')
 var { isLogin } = require('../middlewares/authorize')
 
+
 router.use('/', authRoute)
 router.use('/upload', uploadRoute)
-router.use('/articles', articlesRoute)
+router.use('/articles',  articlesRoute)
 router.use('/user', isLogin, userRoute)
 router.get('/', function(req, res) {
   res.send('welcome to mini-wp')

@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <meta name="google-signin-client_id" content="456183719813-27c97kdm02jd13n7vdeb2m8g56mjvj3a.apps.googleusercontent.com">
   <link rel="stylesheet" href="./assets/css/mystyle.css">
 </head>
 
@@ -17,33 +19,59 @@
   <div id="app">
     <header class="navbar navbar-light d-flex justify-content-between bd-navbar sticky-top" style="background-color:#00353f;">
       
-      <a class="navbar-brand mx-auto" href="#"><img src="./assets/logo.png" alt="logo"></a>
+      <a class="navbar-brand mx-auto" href="#"><img src="./assets/logo.png" alt="logo" @click="changeMenu('article')"></a>
       <div class="p-2 dropdown">
-        <a href="#" class="btn dropdown-toggle" style="color: orange;" data-toggle="dropdown"><i class="far fa-user-circle fa-lg my-1"></i></a>
+        <a href="#" class="btn dropdown-toggle" id="user-icon" data-toggle="dropdown"><i class="far fa-user-circle fa-lg my-1"></i></a>
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item" href="#">Setting</a>
-            <a class="dropdown-item" href="#">Logout</a>
+            <a class="dropdown-item" href="#" @click.prevent="logout">Logout</a>
+            <a href="#" onclick="signOut();">Sign out</a>
         </div>
         
       </div>
+      
     </header>
   
-    <div class="container-fluid" id="articles" >
+    <div class="container-fluid" id="articles" v-if="isLogin" >
       <div class="row">
         <sidebar-component @page="changeMenu($event)" @filter="searchFilter($event)"></sidebar-component>
         <div class="col-7">
   
-          <form-component v-if="menu === 'editor'" @preview="preview($event)" @edit-article="fillForm" :update-article="update" @updateSucess="updatedData($event)"></form-component>
+
+          <div v-if="menu == 'editor'">
+            <form-component  @preview="preview($event)" @edit-article="fillForm" :update-article="update" @created-data="createdData($event)" @update-success="updatedData($event)"></form-component>
+          </div>
   
-          <article-component v-else-if="menu === 'article'" v-for="(article, index) in filtered" :article="article" :index="index" :key="article._id" @deleteArticle="delete($event)"  @edit-article="fillForm($event)"></article-component>          
+          <div v-else-if="menu == 'my-article'">
+            <article-component v-if="userArticles.length" v-for="(article, index) in userArticles" :key="article._id" :user-article="true" :article="article" :index="index" @delete-article="deleteData($event)"  @edit-article="fillForm($event)"></article-component>
+            <empty-component v-if="!userArticles.length"></empty-component>
+          </div>
+          
+          <div v-else>
+            <article-component v-if="articles.length" v-for="(article, index) in filtered" :key="article._id" :article="article" :index="index" ></article-component>
+            <empty-component v-else-if="!articles.length"></empty-component>
+          </div>
+          <!-- <article-component v-else-if="menu === 'my-article'" v-for="(article, index) in userArticles" :key="article._id" :article="article" :index="index" @delete-article="deleteData($event)"  @edit-article="fillForm($event)"></article-component> -->
+          <!-- :my-articles="myArticles" :key="article._id" @delete-article="deleteData($event)"  @edit-article="fillForm($event)" -->
   
         </div>
-        <div class="col-3">
+        <div class="col-3" v-if="menu == 'editor'">
           <preview-component v-if="previewImage != ''" :preview="previewImage" ></preview-component>
         </div>
       </div>
     </div>
+
+
+
+
+    <div v-else>
+      <!-- <login-component @logged="logged"></login-component> -->
+      <login-component @logged="logged" @register="changeMenu('register')" v-if="menu != 'register'"></login-component>
+      <register-component v-else @registered="logged" ></register-component>
+    </div>
   </div>
+
+
   
 
   <!-- S C R I P T    H E R E  -->
@@ -53,6 +81,10 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
   <script src="./assets/js/vueWysiwyg.js"></script>
   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  
+  <script src="./assets/components/empty-component.js"></script>  
+  <script src="./assets/components/register-component.js"></script>
+  <script src="./assets/components/login-component.js"></script>
   <script src="./assets/components/article-component.js"></script>
   <script src="./assets/components/form-component.js"></script>
   <script src="./assets/components/sidebar-component.js"></script>

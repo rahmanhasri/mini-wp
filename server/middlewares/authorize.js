@@ -1,5 +1,6 @@
 const { tokenDecoder } = require('../helpers/jwt')
 const User = require('../models/user')
+const Article = require('../models/article')
 
 module.exports = {
 
@@ -13,12 +14,12 @@ module.exports = {
       } else {
         
         let tokenDecoded = tokenDecoder(token)
-        User.findOne({ email : tokenDecoded.email })
+        User.findOne({ _id : tokenDecoded.id })
           .then( function(user) {
+            // console.log(user)
             if(!user) {
               throw 'invalid token'
             } else {
-              console.log('here')
               req.headers.id = user._id
               next()
             }
@@ -31,4 +32,23 @@ module.exports = {
         .json({ message :`invalid token` })
     }
   },
+
+  isAuthorize: function(req, res, next) {
+
+    Article.findOne({ _id : req.params.id })
+      .then( function(article) {
+        if((article.author).toString() != (req.headers.id).toString()) {
+          res
+            .status(400)
+            .json({ message : `Invalid authorize access`})
+        } else {
+          next()
+        }
+      })
+      .catch( function(err) {
+        res
+          .status(500)
+          .json(err)
+      })
+  }
 }

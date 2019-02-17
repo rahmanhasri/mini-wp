@@ -1,9 +1,10 @@
 Vue.component('article-component', {
   
-  props : ['article', 'index1'],
+  props : ['article', 'index', 'user-article'],
+
   methods : {
     deleteArticle(id, index) {
-      console.log(id, index)
+      // console.log(id, index)
       swal({
         title: "Are you sure?",
         text: "Once deleted, you will not be able to recover this article!",
@@ -15,20 +16,26 @@ Vue.component('article-component', {
         if (willDelete) {
           axios({
             method: 'delete',
-            url: serverUrl + `/articles/${id}`
+            url: serverUrl + `/articles/${id}`,
+            headers : { token : localStorage.getItem('token') }
           })
             .then( response => {
               // console.log(response)
               // let index = this.articles.findIndex(article => {
               //   return article._id == id
               // })
-              this.$emit('deleteArticle', index)
+              this.$emit('delete-article', { index : index, id : id })
               swal("Poof! Your Article has been deleted!", {
                 icon: "success",
               });
             })
-            .catch( err => {
-              console.log(JSON.stringify(err))
+            .catch( ({ response }) => {
+
+              let warning = response.data.message || response.statusText
+              swal(warning, {
+                timer: 2000,
+              })
+              // console.log(JSON.stringify(err))
             })
         }
       });
@@ -68,16 +75,24 @@ Vue.component('article-component', {
         </div>
         <div class="col-md-9">
           <h4 class="card-title">{{ article.title }}</h4>
-          <footer><p>Created At : {{ getDate(article.created_at) }}</p></footer>
+          <footer><p>Created At : {{ getDate(article.created_at) }}</p>
+          <div v-if="!userArticle">
+          <p v-if="article.author">Creator : {{ article.author.name }}</p>
+          </div>
+          </footer>
           <a class="btn my-3" style="color: black" >
             View Detail
           </a>
-          <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article)">
-            Edit
-          </a>
-          <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id, index)" role="button" >
-            Delete
-          </a>
+          <template v-if="userArticle">
+            <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article)">
+              Edit
+            </a>
+          </template>
+          <template v-if="userArticle">
+            <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id, index)" role="button" >
+              Delete
+            </a>
+          </template>
         </div>
       </div>
 

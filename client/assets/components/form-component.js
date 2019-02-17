@@ -10,34 +10,6 @@ Vue.component('form-component', {
     }
   },
 
-  watch : {
-    // title() {
-    //   this.title = this.updateArticle ? updateArticle.title : ''
-    // },
-    // text() {
-    //   console.log(this.updateArticle)
-    //   this.text = this.updateArticle ? updateArticle.content : ''
-    // }
-  },
-  computed: {
-    // titleFill: {
-    //   get: function () {
-    //     return this.updateArticle ? this.updateArticle.title : this.title
-    //   },
-    //   set: function (newValue) {
-    //     this.updateArticle.title = newValue
-    //   }
-    // },
-    // textFill:{
-    //   get: function() {
-    //     return this.updateArticle ? this.updateArticle.content : this.text
-    //   },
-    //   set: function(newValue) {
-    //     this.updateArticle.content = newValue
-    //   }
-    // }
-  },
-
   methods : {
 
     previewFiles(e) {
@@ -53,15 +25,15 @@ Vue.component('form-component', {
       dataForm.append('title', this.title)
       dataForm.append('content', this.text)
       dataForm.append('image', this.files[0])
-      if(!this.files.length) {
-        swal('Please input featured image', {
-          buttons: true,
+      if(!this.files.length || !this.title.length || !this.text.length) {
+        swal('Input cannot be blank like heart of yours', {
+          buttons: false,
           timer: 2000,
         });
       } else if(!(this.files[0].type.includes('jpeg') || this.files[0].type.includes('jpg') || this.files[0].type.includes('png'))) {
         swal({
           title: "Please input image file",
-          button : "ok",
+          button : false,
           timer: 2000
         })
       } else {
@@ -70,56 +42,78 @@ Vue.component('form-component', {
           method: 'post',
           url: serverUrl + '/articles',
           data : dataForm,
-          headers: { 'Content-Type': 'multipart/form-data' }        
+          headers: { 'Content-Type': 'multipart/form-data', token : localStorage.getItem('token') }        
         })
           .then( ({ data }) => {
             // console.log(data)
-            this.articles.unshift(data)
+            // this.articles.unshift(data)
             this.loading = false
             swal("Poof! Your Article has been submitted!", {
               icon: "success",
             });
+            this.$emit('created-data', data)
             this.clearEditor()
           })
-          .catch( ({response }) => {
+          .catch( ({response}) => {
             // console.log(response.data.message.split('Article validation failed: ')[1].split(', '))
-            let warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
+            // console.log(response.data)
+            this.loading = false
+            let warning = response.data.message || response.statusText
+            if(response.data.message.includes('Article validation failed: ')) {
+              warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
+            }
             swal(warning, {
-              buttons: true,
               timer: 2000,
+              button : false
             });
           })     
       }
     },
 
     submitUpdate() {
-      let dataForm = new FormData()
-      dataForm.append('title', this.title)
-      dataForm.append('content', this.text)
-      if(this.files[0]) {
-        dataForm.append('image', this.files[0])
-      }
 
-      axios({
-        method: 'post',
-        url: serverUrl+ `/articles/${this.updateArticle._id}`,
-        data : dataForm,
-        headers : { 'Content-Type' : 'multipart/form-data'}
+      swal({
+        title: "Are you sure?",
+        buttons: ['cancel', 'update'],
       })
-      .then( ({data}) => {
-      // console.log(data)
-          // this.updateArticle.title = this.title
-          // this.updateArticle.content = this.text
-          // console.log(data)
-          this.$emit('updateSuccess', data)
-          // console.log(JSON.stringify(response))
-          // let index = this.articles.findIndex(article => article._id == this.update-article)
-          // this.articles.splice(index, 1 ,data)
-          this.clearEditor()
+      .then( willUpdate => {
+        if(willUpdate) {
+        let dataForm = new FormData()
+        dataForm.append('title', this.title)
+        dataForm.append('content', this.text)
+        if(this.files[0]) {
+          dataForm.append('image', this.files[0])
+        }
+        
+        this.loading = true
+        axios({
+          method: 'post',
+          url: serverUrl+ `/articles/${this.updateArticle._id}`,
+          data : dataForm,
+          headers : { 'Content-Type' : 'multipart/form-data', token : localStorage.getItem('token')}
         })
-        .catch( ({ response }) => {
-          console.log(response.data.message)
-        })
+          .then( ({data}) => {
+            swal("Poof! Your Article has been updated!", {
+              icon: "success",
+            });
+            this.loading = false
+            this.$emit('update-success', data)
+            // console.log(JSON.stringify(response))
+            this.clearEditor()
+            })
+          .catch( ({ response }) => {
+            this.loading = false
+            // console.log(response.data.message)
+            let warning = response.data.message || response.statusText
+            if(response.data.message.includes('Article validation failed: ')) {
+              warning = response.data.message.split('Article validation failed: ')[1].split(', ').join('\n')
+            }
+            swal(warning, {
+              timer: 2000,
+            });
+          })
+        }
+      })
     },
 
     clearEditor() {
