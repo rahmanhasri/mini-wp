@@ -29,7 +29,7 @@ module.exports = {
 
   login : function(req, res) {
 
-    console.log(req.body)
+    // console.log(req.body)
     User.findOne({email : req.body.email})
       .then( function(user) {
         // console.log(user)
@@ -92,7 +92,7 @@ module.exports = {
       }
     })
     .then( newUser => {
-      console.log('google')
+      // console.log('google')
       let token = null
       if(!newUser) {
         token = tokenGenerator(oldUser._id, oldUser.email)
@@ -102,10 +102,7 @@ module.exports = {
       res.status(200).json({ token : token })
     })
     .catch( err => {
-      res.status(500).json({
-        msg: 'internal server error',
-        err: err
-      })
+      res.status(500).json(err)
     })
   }
 }

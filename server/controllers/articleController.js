@@ -2,8 +2,10 @@ const Article = require('../models/article')
 
 module.exports = {
   getArticles: function(req, res) {
-    
-    Article.find({}).sort({'created_at' : 'desc'}).populate({ path : 'author', select : 'name'})
+    req.query.q = req.query.q ? req.query.q : '' 
+    // { 'username' : { '$regex' : req.body.keyWord, '$options' : 'i' } }
+    Article.find({ 'title' : { '$regex' : req.query.q, '$options' : 'i' }, 'status' : 'published'}).sort({'created_at' : 'desc'}).populate({ path : 'author', select : 'name'})
+    // Article.find({ '$or' : [{ 'title' : { '$regex' : 'ilham', '$options' : 'i' }}, {'content' : 'batman'} ]}).sort({'created_at' : 'desc'}).populate({ path : 'author', select : 'name'})
       .then( function(articles) {
         res
           .status(200)
@@ -12,7 +14,7 @@ module.exports = {
       .catch( function(err) {
         res
           .status(500)
-          .json(err)
+          .json({ message : `internal server error` })
       })
   },
 
@@ -68,7 +70,8 @@ module.exports = {
       content : req.body.content,
       image : image,
       created_at : new Date(),
-      author : req.headers.id
+      author : req.headers.id,
+      status: 'published'
     })
       .then( function(newArticle) {
         return newArticle.populate({path : 'author', select : 'name'}).execPopulate()
@@ -108,6 +111,24 @@ module.exports = {
         console.log(err)
         res
           .status(400)
+          .json(err)
+      })
+  },
+
+  modifyArticle: function(req, res) {
+    input = {
+      status : req.body.status
+    }
+
+    Article.findOneAndUpdate({ _id : req.params.id }, { $set : input }, { new : true })
+      .then( function(updated) {
+        res
+          .status(200)
+          .json(updated)
+      })
+      .catch( function(err) {
+        res
+          .status(500)
           .json(err)
       })
   },

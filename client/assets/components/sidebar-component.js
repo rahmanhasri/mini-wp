@@ -19,6 +19,9 @@ Vue.component('sidebar-component', {
     },
     toUserArticle() {
       this.$emit('page', 'my-article')
+    },
+    toTrash() {
+      this.$emit('page', 'trash')
     }
   },
   template : `
@@ -30,6 +33,7 @@ Vue.component('sidebar-component', {
         <a class="nav-link" @click.prevent="toArticle" href="#">Articles</a>
         <a class="nav-link" @click.prevent="toUserArticle" href="#">My Articles</a>
         <a class="nav-link" @click.prevent="toEditor" href="#">New Articles</a>
+        <a class="nav-link" @click.prevent="toTrash" href="#">Trash</a>
     </nav>
   </div>
   `

@@ -25,7 +25,6 @@
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item" href="#">Setting</a>
             <a class="dropdown-item" href="#" @click.prevent="logout">Logout</a>
-            <a href="#" onclick="signOut();">Sign out</a>
         </div>
         
       </div>
@@ -34,26 +33,48 @@
   
     <div class="container-fluid" id="articles" v-if="isLogin" >
       <div class="row">
-        <sidebar-component @page="changeMenu($event)" @filter="searchFilter($event)"></sidebar-component>
+        <sidebar-component @page="changeMenu($event)" @filter="searchShot($event)"></sidebar-component>
         <div class="col-7">
   
 
-          <div v-if="menu == 'editor'">
+          <div class="d-flex justify-content-center" v-if="loading == true">
+            <img class="item-" src="https://static-steelkiwi-dev.s3.amazonaws.com/media/filer_public/4e/07/4e07eece-7c84-46e2-944d-1a6b856d7b5f/463ff844-6f36-4ffe-b051-fea983d39223.gif">
+          </div>
+
+          <div v-else-if="menu == 'editor'">
             <form-component  @preview="preview($event)" @edit-article="fillForm" :update-article="update" @created-data="createdData($event)" @update-success="updatedData($event)"></form-component>
           </div>
   
           <div v-else-if="menu == 'my-article'">
-            <article-component v-if="userArticles.length" v-for="(article, index) in userArticles" :key="article._id" :user-article="true" :article="article" :index="index" @delete-article="deleteData($event)"  @edit-article="fillForm($event)"></article-component>
+            <article-component v-if="userArticles.length" v-for="(article, index) in userArticles" :key="article._id" :user-article="'user'" :article="article" :index="index" @delete-article="deleteData($event)"  @edit-article="fillForm($event)" @archive-article="archiveData($event)"></article-component>
             <empty-component v-if="!userArticles.length"></empty-component>
           </div>
           
-          <div v-else>
-            <article-component v-if="articles.length" v-for="(article, index) in filtered" :key="article._id" :article="article" :index="index" ></article-component>
-            <empty-component v-else-if="!articles.length"></empty-component>
+          <div v-else-if="menu == 'article'">
+            <article-component v-if="articles.length" v-for="(article, index) in articles" :key="article._id" :article="article" :index="index" @view-detail="viewDetail($event)" ></article-component>
+            <empty-component v-if="!articles.length"></empty-component>
+          </div>
+
+          <div v-else-if="menu == 'trash'">
+            <article-component v-if="userTrashes.length" v-for="(article, index) in userTrashes" :key="article._id" :user-article="'trash'" :article="article" :index="index" @view-detail="viewDetail($event)" @restore-article="restoreData($event)" @delete-archive="deleteData($event)"></article-component>
+            <empty-component v-if="!userTrashes.length"></empty-component>
+          </div>
+
+          <div v-else-if="menu == 'details'">
+            <view-component v-if="detail" :view-article="detail" @scroll-up="scroll()"></view-component>
+          </div>
+
+          <div v-else-if="menu == 'search'">
+            <search-result v-for="article in searchResults" :article="article" :key="article._id" @view-detail="viewDetail($event)"></search-result>
+            <empty-component v-if="!searchResults.length"></empty-component>
+          </div>
+
+          <div class="text-center card-footer text-muted" v-if="menu == 'article' || menu == 'search'">
+            <a href="#" @click.prevent="scroll()" >To the top</a>
           </div>
           <!-- <article-component v-else-if="menu === 'my-article'" v-for="(article, index) in userArticles" :key="article._id" :article="article" :index="index" @delete-article="deleteData($event)"  @edit-article="fillForm($event)"></article-component> -->
           <!-- :my-articles="myArticles" :key="article._id" @delete-article="deleteData($event)"  @edit-article="fillForm($event)" -->
-  
+          
         </div>
         <div class="col-3" v-if="menu == 'editor'">
           <preview-component v-if="previewImage != ''" :preview="previewImage" ></preview-component>
@@ -85,6 +106,8 @@
   <script src="./assets/components/empty-component.js"></script>  
   <script src="./assets/components/register-component.js"></script>
   <script src="./assets/components/login-component.js"></script>
+  <script src="./assets/components/search-component.js"></script>  
+  <script src="./assets/components/view-component.js"></script>
   <script src="./assets/components/article-component.js"></script>
   <script src="./assets/components/form-component.js"></script>
   <script src="./assets/components/sidebar-component.js"></script>

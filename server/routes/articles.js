@@ -10,7 +10,7 @@ router.use(isLogin)
 router.post('/', images.multer.single('image'), images.sendUploadToGCS, article.createArticle)
 // post diatas create, post dibawah update
 router.post('/:id', isAuthorize, images.multer.single('image'), images.sendUploadToGCS, article.updateArticle)
-// router.put('/:id', article.updateArticle)
+router.put('/:id', article.modifyArticle)
 router.delete('/:id', isAuthorize, article.deleteArticle)
 
 module.exports = router;

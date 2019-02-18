@@ -25,7 +25,7 @@ Vue.component('article-component', {
               //   return article._id == id
               // })
               this.$emit('delete-article', { index : index, id : id })
-              swal("Poof! Your Article has been deleted!", {
+              swal("Poof! Your Article has been deleted completely!", {
                 icon: "success",
               });
             })
@@ -45,6 +45,51 @@ Vue.component('article-component', {
       this.$emit('edit-article', article)
     },
 
+    archiveThis(id, index, value) {
+      swal({
+        title: "Are you sure?",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+      })
+      .then((willDelete) => {
+        if (willDelete) {
+          axios({
+            method: 'put',
+            url: serverUrl + `/articles/${id}`,
+            headers : { token : localStorage.getItem('token') },
+            data : { status : value }
+          })
+            .then( response => {
+              if(value === 'published') {
+                this.restoreArticle({ index : index, id : id })
+              } else {
+                this.archiveArticle({ index : index, id : id })
+              }
+            })
+            .catch( ({ response }) => {
+
+              let warning = response.data.message || response.statusText
+              swal(warning, {
+                timer: 2000,
+              })
+              // console.log(JSON.stringify(err))
+            })
+        }
+      });
+    },
+    archiveArticle(obj) {
+      this.$emit('archive-article', obj)
+      swal("Your Article has been removed and goes to trash!", {
+        icon: "success",
+      });
+    },
+    restoreArticle(obj) {
+      this.$emit('restore-article', obj)
+      swal("Your Article has been restored!", {
+        icon: "success"
+      })
+    },
     getDate(date) {
 
       let month = {
@@ -80,28 +125,31 @@ Vue.component('article-component', {
           <p v-if="article.author">Creator : {{ article.author.name }}</p>
           </div>
           </footer>
-          <a class="btn my-3" style="color: black" >
+          <a class="btn my-3" style="color: black" @click.prevent="$emit('view-detail', article)">
             View Detail
           </a>
-          <template v-if="userArticle">
-            <a class="btn btn-outline-success rounded-0 my-3" href="#collapseOne" data-toggle="collapse" @click="updateArticle(article)">
+          <template v-if="userArticle == 'user'">
+            <a class="btn btn-outline-success rounded-0 my-3" @click="updateArticle(article)">
               Edit
             </a>
           </template>
-          <template v-if="userArticle">
-            <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id, index)" role="button" >
+          <template v-if="userArticle == 'user'">
+            <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="archiveThis(article._id, index, 'archived')" role="button" >
               Delete
+            </a>
+          </template>
+          <template v-if="userArticle == 'trash'">
+            <a class="btn btn-outline-success rounded-0 my-3" href="#" @click="archiveThis(article._id, index, 'published')" role="button" >
+              Restore
+            </a>
+          </template>
+          <template v-if="userArticle == 'trash'">
+            <a class="btn btn-outline-danger rounded-0 my-3" href="#" @click="deleteArticle(article._id, index)" role="button" >
+              Really Really Delete
             </a>
           </template>
         </div>
       </div>
-
-      <div class="row">
-
-        <div class="collapse w-100" :id="article._id">
-          <div class="card card-body" v-html="article.content">
-          </div>
-        </div>
       </div>
     </div>
   </div>

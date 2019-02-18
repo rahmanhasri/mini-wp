@@ -43,12 +43,16 @@ const app2 = new Vue({
   data : {
     articles : [],
     keyword: '',
+    loading : false,
     update : false,
     isLogin : false,
     menu : 'article',
     previewImage : '',
     dataChanged : false,
-    userArticles : []
+    userArticles : [],
+    userTrashes : [],
+    detail : null,
+    searchResults : []
   },
 
   computed : {
@@ -81,28 +85,19 @@ const app2 = new Vue({
         })
     },
 
-    getUserArticles() {
-      // axios({
-      //   method : 'get',
-      //   url: serverUrl + '/user',
-      //   headers : { token : localStorage.getItem('token')}
-      // })
-      //   .then( ({ data }) => {
-      //     this.user = data
-      //   })
-      //   .catch( ({ response }) => {
-      //     let warning = response.data.message || response.statusText
-      //     swal(warning, {
-      //       timer: 2000,
-      //     })
-      //   })
+    getUserArticles(query = 'published') {
+
       axios({
         method : 'get',
-        url: serverUrl + '/user/articles',
+        url: serverUrl + `/user/articles?q=${query}`,
         headers : { token : localStorage.getItem('token')}
       })
         .then( ({ data }) => {
-          this.userArticles = data
+          if(query == 'archived') {
+            this.userTrashes = data
+          } else {
+            this.userArticles = data
+          }
         })
         .catch( ({ response }) => {
           let warning = response.data.message || response.statusText
@@ -112,31 +107,37 @@ const app2 = new Vue({
           })
         })
     },
-    // toEditor() {
-    //   this.currentPage ='editor'
-    // }, 
-    
-    // toArticle() {
-    //   this.clearEditor()
-    //   this.currentPage = 'menu'
-    // },
 
-    // updateArticle(article) {
-    //   // this.title = article.title
-    //   // this.text = article.content
-    //   // this.update = article
-    // },
+    searchShot(keyword) {
+      this.loading = true
+      axios({
+        method: 'get',
+        url : serverUrl + '/articles?q=' + keyword,
+        
+      })
+        .then( ({ data }) => {
+          this.loading = false
+          this.searchResults = data
+          this.menu = 'search'
+        })
+        .catch( ({ response }) => {
+          swal(response.statusText, {
+            button : false,
+            timer : 2000
+          })
+        })
+    },
 
     changeMenu(value) {
       this.update = false
-      this.menu = value
       this.previewImage = ''
+      this.menu = value
       this.keyword = ''
     },
 
     searchFilter(keyword) {
-      this.menu = 'article'
       this.keyword = keyword
+      this.menu = 'search'
     },
 
     preview(value) {
@@ -164,11 +165,38 @@ const app2 = new Vue({
     },
 
     deleteData(value) {
-      console.log(value)
+      // console.log(value)
       let index = this.articles.findIndex(article => article._id == value.id)
-      console.log(index)
-      index != -1 && this.articles.splice(value.index, 1)
-      this.userArticles.splice(value, 1)
+      // console.log(index)
+      index != -1 && this.articles.splice(index, 1)
+      this.userArticles.splice(value.index, 1)
+    },
+    archiveData(value) {
+      // console.log(value)
+      let index = this.articles.findIndex(article => article._id == value.id)
+      // console.log(index)
+      index != -1 && this.articles.splice(index, 1)
+      this.userTrashes.push(this.userArticles[value.index])
+      this.userArticles.splice(value.index, 1)
+    },
+
+    restoreData(value) {
+      // console.log(value)
+      this.userArticles.push(this.userTrashes[value.index])
+      this.userArticles.sort( (a,b) => new Date(a.created_at) < new Date(b.created_at))
+      this.userTrashes.splice(value.index, 1)
+    },
+
+    viewDetail(article) {
+      // console.log(article)
+
+      this.detail = article
+      // console.log(this.detail)
+      this.menu = 'details'
+    },
+
+    scroll() {
+      window.scrollBy(0, -3000);
     },
 
     logged() {
@@ -180,6 +208,7 @@ const app2 = new Vue({
         timer : 2000
       })
       this.getUserArticles()
+      this.getUserArticles('archived')
       this.menu = 'article'
       this.isLogin = true
     },

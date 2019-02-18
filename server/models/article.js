@@ -13,6 +13,10 @@ let articleSchema = new Schema({
   author : {type : Schema.Types.ObjectId, ref: 'User' },
   created_at : Date,
   image : String,
+  status : {
+    type: String,
+    enum : ['published','archived']
+  },
   tags : [{ type : Schema.Types.String, ref: 'Tag' }]
 })
 

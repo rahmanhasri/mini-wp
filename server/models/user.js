@@ -14,7 +14,7 @@ let UserSchema = new Schema({
         validator: function (value) {
           return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(value)
         },
-        msg: "invalid email format"
+        message: "invalid email format"
       },
       {
         isAsync: true,

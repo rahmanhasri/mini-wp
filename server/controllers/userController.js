@@ -23,7 +23,7 @@ module.exports = {
   getArticles: function(req, res) {
 
     // console.log(req.headers.id)
-    Article.find({ author : req.headers.id }).sort({'created_at' : 'desc'})
+    Article.find({ author : req.headers.id , status : req.query.q }).sort({'created_at' : 'desc'})
       .then( function(articles) {
         res
           .status(200)
